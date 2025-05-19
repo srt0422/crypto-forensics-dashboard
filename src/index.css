@@ -99,3 +99,8 @@
     @apply bg-background text-foreground;
   }
 }
+
+.pdf-export-mode {
+  max-height: none !important;
+  overflow: visible !important;
+}

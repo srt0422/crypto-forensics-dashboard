@@ -1,4 +1,3 @@
-
 import { Link, useLocation } from 'react-router-dom';
 import { 
   BarChart, 
@@ -9,6 +8,7 @@ import {
   Home, 
   Link as LinkIcon 
 } from 'lucide-react';
+import PDFExportButton from './PDFExportButton';
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
@@ -58,6 +58,12 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
 
       {/* Main Content */}
       <div className="flex-1 overflow-auto">
+        <header className="bg-white p-4 shadow-sm flex justify-between items-center">
+          <h2 className="text-lg font-medium">
+            {navigation.find(item => item.href === location.pathname)?.name || 'Dashboard'}
+          </h2>
+          <PDFExportButton />
+        </header>
         <main className="p-6">{children}</main>
       </div>
     </div>

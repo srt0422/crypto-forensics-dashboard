@@ -71,3 +71,72 @@ Yes, you can!
 To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
 
 Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+
+# Crypto Forensics Dashboard
+
+A comprehensive dashboard for blockchain transaction analysis and forensics.
+
+## PDF Export Functionality
+
+The dashboard includes robust PDF export capabilities:
+
+### Features
+
+- Export any single page to PDF
+- Export the entire dashboard as a comprehensive report
+- Individual exports for specific dashboard sections:
+  - Summary Dashboard
+  - Network Analytics
+  - Inbound Transactions
+  - Outbound Transactions
+  - Address Attribution
+  - Fund Source Hierarchy
+
+### How to Use
+
+1. Click the "Export PDF" button in the top-right corner of any dashboard page
+2. Select your desired export option from the dropdown menu
+3. Wait for the PDF to generate (this may take a few moments, especially when exporting all pages)
+4. The PDF will automatically download when ready
+
+### Technical Implementation
+
+The PDF export functionality uses:
+- html2canvas: For capturing DOM elements as images
+- jsPDF: For creating PDF documents
+- React Router: For navigating between pages during export
+
+## Development
+
+### Prerequisites
+
+- Node.js 14.x or later
+- npm 6.x or later
+
+### Getting Started
+
+```bash
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+
+# Build for production
+npm run build
+```
+
+### Project Structure
+
+```
+dashboard_app/
+├── public/           # Static assets
+├── src/
+│   ├── components/   # React components
+│   │   └── ui/       # UI components (buttons, cards, etc.)
+│   ├── data/         # Mock data and data models
+│   ├── hooks/        # Custom React hooks
+│   ├── lib/          # Utility functions
+│   │   └── pdfExport.ts # PDF export utilities
+│   └── pages/        # Dashboard pages
+```

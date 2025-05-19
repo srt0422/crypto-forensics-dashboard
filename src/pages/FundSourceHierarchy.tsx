@@ -1,9 +1,19 @@
-
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import DashboardHeader from '@/components/DashboardHeader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { fundSourceTree } from '@/data/mockData';
 import { Badge } from '@/components/ui/badge';
+
+// Utility to collect all node IDs in the tree
+function collectAllNodeIds(node) {
+  let ids = [node.id];
+  if (node.children && node.children.length > 0) {
+    for (const child of node.children) {
+      ids = ids.concat(collectAllNodeIds(child));
+    }
+  }
+  return ids;
+}
 
 interface FundSourceNodeProps {
   node: typeof fundSourceTree;
@@ -68,10 +78,28 @@ const FundSourceNode: React.FC<FundSourceNodeProps> = ({
   );
 };
 
-const FundSourceHierarchy = () => {
+interface FundSourceHierarchyProps {
+  pdfExportMode?: boolean;
+}
+
+const FundSourceHierarchy: React.FC<FundSourceHierarchyProps> = () => {
+  // Read global flag for PDF export mode
+  const [pdfExportMode, setPdfExportMode] = useState(!!window.__pdfExportMode);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (!!window.__pdfExportMode !== pdfExportMode) {
+        setPdfExportMode(!!window.__pdfExportMode);
+      }
+    }, 100);
+    return () => clearInterval(interval);
+  }, [pdfExportMode]);
+
+  const allNodeIds = useRef(collectAllNodeIds(fundSourceTree));
   const [expanded, setExpanded] = useState<Record<string, boolean>>({
     [fundSourceTree.id]: true,
   });
+  const prevExpanded = useRef<Record<string, boolean>>();
 
   const toggleExpand = (id: string) => {
     setExpanded(prev => ({
@@ -79,6 +107,28 @@ const FundSourceHierarchy = () => {
       [id]: !prev[id]
     }));
   };
+
+  // Expose expand/collapse all for PDF export
+  useEffect(() => {
+    window.__expandAllFundSourceNodes = () => {
+      prevExpanded.current = expanded;
+      const all = {};
+      for (const id of allNodeIds.current) {
+        all[id] = true;
+      }
+      setExpanded(all);
+    };
+    window.__restoreFundSourceNodes = () => {
+      if (prevExpanded.current) {
+        setExpanded(prevExpanded.current);
+      }
+    };
+    return () => {
+      delete window.__expandAllFundSourceNodes;
+      delete window.__restoreFundSourceNodes;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [expanded]);
 
   return (
     <div>
@@ -92,7 +142,7 @@ const FundSourceHierarchy = () => {
           <CardTitle>Fund Flow Hierarchy</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
-          <div className="overflow-auto max-h-[600px]">
+          <div className={pdfExportMode ? 'pdf-export-mode' : 'overflow-auto max-h-[600px]'}>
             <div className="min-w-full">
               <div className="bg-gray-100 py-2 px-4 flex font-semibold border-b">
                 <div className="flex-1">Address</div>
@@ -112,3 +162,7 @@ const FundSourceHierarchy = () => {
 };
 
 export default FundSourceHierarchy;
+
+// For PDF export integration
+// window.__expandAllFundSourceNodes() to expand all
+// window.__restoreFundSourceNodes() to restore previous state
