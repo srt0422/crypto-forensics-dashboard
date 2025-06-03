@@ -1,3 +1,4 @@
+
 import { Link, useLocation } from 'react-router-dom';
 import { 
   BarChart, 
@@ -29,7 +30,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
         <div className="p-6">
           <div className="flex items-center space-x-2">
             <BarChart className="h-8 w-8 text-crypto-teal" />
-            <span className="text-xl font-bold">CryptoForensics</span>
+            <span className="text-xl font-bold">Crypto Sleuth</span>
           </div>
         </div>
         <nav className="mt-6">
