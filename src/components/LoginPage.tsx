@@ -99,13 +99,6 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
               {isLoading ? 'Authenticating...' : 'Sign In'}
             </Button>
           </form>
-          <div className="mt-6 p-4 bg-muted rounded-lg">
-            <p className="text-sm text-muted-foreground">
-              <strong>Demo Credentials:</strong><br />
-              Username: admin<br />
-              Password: CryptoSleuth2024!
-            </p>
-          </div>
         </CardContent>
       </Card>
     </div>
