@@ -5,6 +5,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Layout from "@/components/Layout";
+import LoginPage from "@/components/LoginPage";
+import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import Index from "./pages/Index";
 import NetworkAnalytics from "./pages/NetworkAnalytics";
 import InboundTransactions from "./pages/InboundTransactions";
@@ -15,22 +17,36 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
+const AppContent = () => {
+  const { isAuthenticated, login } = useAuth();
+
+  if (!isAuthenticated) {
+    return <LoginPage onLogin={login} />;
+  }
+
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Layout><Index /></Layout>} />
+        <Route path="/network-analytics" element={<Layout><NetworkAnalytics /></Layout>} />
+        <Route path="/inbound-transactions" element={<Layout><InboundTransactions /></Layout>} />
+        <Route path="/outbound-transactions" element={<Layout><OutboundTransactions /></Layout>} />
+        <Route path="/address-attribution" element={<Layout><AddressAttribution /></Layout>} />
+        <Route path="/fund-source-hierarchy" element={<Layout><FundSourceHierarchy /></Layout>} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </BrowserRouter>
+  );
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Layout><Index /></Layout>} />
-          <Route path="/network-analytics" element={<Layout><NetworkAnalytics /></Layout>} />
-          <Route path="/inbound-transactions" element={<Layout><InboundTransactions /></Layout>} />
-          <Route path="/outbound-transactions" element={<Layout><OutboundTransactions /></Layout>} />
-          <Route path="/address-attribution" element={<Layout><AddressAttribution /></Layout>} />
-          <Route path="/fund-source-hierarchy" element={<Layout><FundSourceHierarchy /></Layout>} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );

@@ -7,12 +7,16 @@ import {
   Database, 
   FileText, 
   Home, 
-  Link as LinkIcon 
+  Link as LinkIcon,
+  LogOut 
 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useAuth } from '@/contexts/AuthContext';
 import PDFExportButton from './PDFExportButton';
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
+  const { logout } = useAuth();
 
   const navigation = [
     { name: 'Summary Dashboard', icon: Home, href: '/' },
@@ -63,7 +67,18 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
           <h2 className="text-lg font-medium">
             {navigation.find(item => item.href === location.pathname)?.name || 'Dashboard'}
           </h2>
-          <PDFExportButton />
+          <div className="flex items-center space-x-2">
+            <PDFExportButton />
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={logout}
+              className="flex items-center space-x-1"
+            >
+              <LogOut className="h-4 w-4" />
+              <span>Logout</span>
+            </Button>
+          </div>
         </header>
         <main className="p-6">{children}</main>
       </div>

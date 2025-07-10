@@ -43,7 +43,7 @@ const DashboardHeader = ({ title, subtitle }: DashboardHeaderProps) => {
                 selected={dateRange}
                 onSelect={(selected) => {
                   if (selected?.from && selected?.to) {
-                    setDateRange(selected);
+                    setDateRange({ from: selected.from, to: selected.to });
                   }
                 }}
                 defaultMonth={dateRange.from}
