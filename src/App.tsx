@@ -7,12 +7,14 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Layout from "@/components/Layout";
 import LoginPage from "@/components/LoginPage";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { WalletProvider } from "@/contexts/WalletContext";
 import Index from "./pages/Index";
 import NetworkAnalytics from "./pages/NetworkAnalytics";
 import InboundTransactions from "./pages/InboundTransactions";
 import OutboundTransactions from "./pages/OutboundTransactions";
 import AddressAttribution from "./pages/AddressAttribution";
 import FundSourceHierarchy from "./pages/FundSourceHierarchy";
+import WalletManagement from "./pages/WalletManagement";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,6 +30,7 @@ const AppContent = () => {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Layout><Index /></Layout>} />
+        <Route path="/wallet-management" element={<Layout><WalletManagement /></Layout>} />
         <Route path="/network-analytics" element={<Layout><NetworkAnalytics /></Layout>} />
         <Route path="/inbound-transactions" element={<Layout><InboundTransactions /></Layout>} />
         <Route path="/outbound-transactions" element={<Layout><OutboundTransactions /></Layout>} />
@@ -45,7 +48,9 @@ const App = () => (
       <Toaster />
       <Sonner />
       <AuthProvider>
-        <AppContent />
+        <WalletProvider>
+          <AppContent />
+        </WalletProvider>
       </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>

@@ -8,7 +8,8 @@ import {
   FileText, 
   Home, 
   Link as LinkIcon,
-  LogOut 
+  LogOut,
+  Wallet
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
@@ -20,6 +21,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
 
   const navigation = [
     { name: 'Summary Dashboard', icon: Home, href: '/' },
+    { name: 'Wallet Management', icon: Wallet, href: '/wallet-management' },
     { name: 'Network Analytics', icon: Database, href: '/network-analytics' },
     { name: 'Inbound Transactions', icon: ArrowRight, href: '/inbound-transactions' },
     { name: 'Outbound Transactions', icon: ArrowLeft, href: '/outbound-transactions' },
