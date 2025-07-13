@@ -5,19 +5,44 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useWallets } from '@/contexts/WalletContext';
-import { Plus, RefreshCw, Trash2, Wallet, Clock } from 'lucide-react';
+import { Plus, RefreshCw, Trash2, Wallet, Clock, Users, User } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const WalletManagement = () => {
-  const { wallets, addWallet, removeWallet, reimportWalletData, isImporting } = useWallets();
+  const { 
+    wallets, 
+    accountHolders, 
+    addWallet, 
+    removeWallet, 
+    addAccountHolder, 
+    removeAccountHolder, 
+    reimportWalletData, 
+    isImporting 
+  } = useWallets();
+  
   const [newAddress, setNewAddress] = useState('');
   const [newLabel, setNewLabel] = useState('');
+  const [selectedAccountHolder, setSelectedAccountHolder] = useState('');
+  const [newAccountHolderName, setNewAccountHolderName] = useState('');
+
+  const handleAddAccountHolder = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!newAccountHolderName.trim()) {
+      return;
+    }
+
+    const newId = addAccountHolder(newAccountHolderName.trim());
+    setSelectedAccountHolder(newId);
+    setNewAccountHolderName('');
+  };
 
   const handleAddWallet = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!newAddress.trim() || !newLabel.trim()) {
+    if (!newAddress.trim() || !newLabel.trim() || !selectedAccountHolder) {
       return;
     }
 
@@ -27,7 +52,7 @@ const WalletManagement = () => {
       return;
     }
 
-    addWallet(newAddress.trim(), newLabel.trim());
+    addWallet(newAddress.trim(), newLabel.trim(), selectedAccountHolder);
     setNewAddress('');
     setNewLabel('');
   };
@@ -45,6 +70,14 @@ const WalletManagement = () => {
 
   const truncateAddress = (address: string) => {
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
+  };
+
+  const getWalletsByAccountHolder = () => {
+    const grouped = accountHolders.map(accountHolder => ({
+      accountHolder,
+      wallets: wallets.filter(w => w.accountHolderId === accountHolder.id)
+    }));
+    return grouped;
   };
 
   return (
@@ -66,7 +99,37 @@ const WalletManagement = () => {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Add Account Holder Form */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <Users className="h-5 w-5" />
+              <span>Add Account Holder</span>
+            </CardTitle>
+            <CardDescription>
+              Create a new account holder to group wallets
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleAddAccountHolder} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="accountName">Account Holder Name</Label>
+                <Input
+                  id="accountName"
+                  placeholder="e.g., John Doe, Trading Account"
+                  value={newAccountHolderName}
+                  onChange={(e) => setNewAccountHolderName(e.target.value)}
+                  required
+                />
+              </div>
+              <Button type="submit" className="w-full">
+                Add Account Holder
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+
         {/* Add Wallet Form */}
         <Card>
           <CardHeader>
@@ -75,11 +138,26 @@ const WalletManagement = () => {
               <span>Add New Wallet</span>
             </CardTitle>
             <CardDescription>
-              Add a cryptocurrency wallet to start monitoring its transactions
+              Add a cryptocurrency wallet to an account holder
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleAddWallet} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="accountHolder">Account Holder</Label>
+                <Select value={selectedAccountHolder} onValueChange={setSelectedAccountHolder} required>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select account holder" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {accountHolders.map((holder) => (
+                      <SelectItem key={holder.id} value={holder.id}>
+                        {holder.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="label">Wallet Label</Label>
                 <Input
@@ -100,8 +178,8 @@ const WalletManagement = () => {
                   required
                 />
               </div>
-              <Button type="submit" className="w-full">
-                Add Wallet
+              <Button type="submit" className="w-full" disabled={accountHolders.length === 0}>
+                {accountHolders.length === 0 ? 'Add Account Holder First' : 'Add Wallet'}
               </Button>
             </form>
           </CardContent>
@@ -117,6 +195,10 @@ const WalletManagement = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Account Holders</span>
+                <Badge variant="secondary">{accountHolders.length}</Badge>
+              </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">Total Wallets</span>
                 <Badge variant="secondary">{wallets.length}</Badge>
@@ -138,74 +220,101 @@ const WalletManagement = () => {
         </Card>
       </div>
 
-      {/* Wallet List */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <Wallet className="h-5 w-5" />
-            <span>Monitored Wallets</span>
-          </CardTitle>
-          <CardDescription>
-            Manage your cryptocurrency wallets and their monitoring status
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {wallets.length === 0 ? (
-            <Alert>
-              <AlertDescription>
-                No wallets added yet. Add your first wallet to start monitoring transactions.
-              </AlertDescription>
-            </Alert>
-          ) : (
-            <div className="space-y-4">
-              {wallets.map((wallet, index) => (
-                <div key={wallet.id}>
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-3">
-                        <div className="flex-shrink-0">
-                          <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-                            <Wallet className="h-5 w-5 text-primary" />
-                          </div>
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <h3 className="text-sm font-medium truncate">
-                            {wallet.label}
-                          </h3>
-                          <p className="text-sm text-muted-foreground font-mono">
-                            {truncateAddress(wallet.address)}
-                          </p>
-                          <div className="flex items-center space-x-4 mt-1">
-                            <div className="flex items-center text-xs text-muted-foreground">
-                              <Clock className="h-3 w-3 mr-1" />
-                              Last sync: {formatDate(wallet.lastSync)}
-                            </div>
-                            <Badge 
-                              variant={wallet.isActive ? "default" : "secondary"}
-                              className="text-xs"
-                            >
-                              {wallet.isActive ? "Active" : "Inactive"}
-                            </Badge>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => removeWallet(wallet.id)}
-                      className="text-destructive hover:text-destructive"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+      {/* Grouped Wallet List */}
+      {accountHolders.length === 0 ? (
+        <Alert>
+          <AlertDescription>
+            No account holders created yet. Add an account holder to start organizing wallets.
+          </AlertDescription>
+        </Alert>
+      ) : (
+        <div className="space-y-6">
+          {getWalletsByAccountHolder().map((group) => (
+            <Card key={group.accountHolder.id}>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <User className="h-5 w-5" />
+                    <CardTitle>{group.accountHolder.name}</CardTitle>
+                    <Badge variant="outline">{group.wallets.length} wallets</Badge>
                   </div>
-                  {index < wallets.length - 1 && <Separator className="my-2" />}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => removeAccountHolder(group.accountHolder.id)}
+                    className="text-destructive hover:text-destructive"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
                 </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                <CardDescription>
+                  Created on {new Intl.DateTimeFormat('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                  }).format(group.accountHolder.createdAt)}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {group.wallets.length === 0 ? (
+                  <Alert>
+                    <AlertDescription>
+                      No wallets assigned to this account holder yet.
+                    </AlertDescription>
+                  </Alert>
+                ) : (
+                  <div className="space-y-3">
+                    {group.wallets.map((wallet, index) => (
+                      <div key={wallet.id}>
+                        <div className="flex items-center justify-between p-3 border rounded-lg bg-muted/20">
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-3">
+                              <div className="flex-shrink-0">
+                                <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
+                                  <Wallet className="h-4 w-4 text-primary" />
+                                </div>
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <h4 className="text-sm font-medium truncate">
+                                  {wallet.label}
+                                </h4>
+                                <p className="text-xs text-muted-foreground font-mono">
+                                  {truncateAddress(wallet.address)}
+                                </p>
+                                <div className="flex items-center space-x-3 mt-1">
+                                  <div className="flex items-center text-xs text-muted-foreground">
+                                    <Clock className="h-3 w-3 mr-1" />
+                                    Last sync: {formatDate(wallet.lastSync)}
+                                  </div>
+                                  <Badge 
+                                    variant={wallet.isActive ? "default" : "secondary"}
+                                    className="text-xs"
+                                  >
+                                    {wallet.isActive ? "Active" : "Inactive"}
+                                  </Badge>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeWallet(wallet.id)}
+                            className="text-destructive hover:text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                        {index < group.wallets.length - 1 && <Separator className="my-1" />}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

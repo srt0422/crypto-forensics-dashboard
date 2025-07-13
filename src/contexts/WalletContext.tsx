@@ -1,10 +1,17 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
 
+export interface AccountHolder {
+  id: string;
+  name: string;
+  createdAt: Date;
+}
+
 export interface Wallet {
   id: string;
   address: string;
   label: string;
+  accountHolderId: string;
   addedAt: Date;
   lastSync: Date | null;
   isActive: boolean;
@@ -12,8 +19,11 @@ export interface Wallet {
 
 interface WalletContextType {
   wallets: Wallet[];
-  addWallet: (address: string, label: string) => void;
+  accountHolders: AccountHolder[];
+  addAccountHolder: (name: string) => string;
+  addWallet: (address: string, label: string, accountHolderId: string) => void;
   removeWallet: (id: string) => void;
+  removeAccountHolder: (id: string) => void;
   reimportWalletData: () => void;
   isImporting: boolean;
 }
@@ -30,14 +40,56 @@ export const useWallets = () => {
 
 export const WalletProvider = ({ children }: { children: React.ReactNode }) => {
   const [wallets, setWallets] = useState<Wallet[]>([]);
+  const [accountHolders, setAccountHolders] = useState<AccountHolder[]>([]);
   const [isImporting, setIsImporting] = useState(false);
   const { toast } = useToast();
 
-  const addWallet = useCallback((address: string, label: string) => {
+  const addAccountHolder = useCallback((name: string) => {
+    const newAccountHolder: AccountHolder = {
+      id: crypto.randomUUID(),
+      name,
+      createdAt: new Date(),
+    };
+
+    setAccountHolders(prev => [...prev, newAccountHolder]);
+    
+    toast({
+      title: "Account Holder Added",
+      description: `${name} has been added successfully.`,
+    });
+
+    return newAccountHolder.id;
+  }, [toast]);
+
+  const removeAccountHolder = useCallback((id: string) => {
+    const accountHolder = accountHolders.find(ah => ah.id === id);
+    const associatedWallets = wallets.filter(w => w.accountHolderId === id);
+    
+    if (associatedWallets.length > 0) {
+      toast({
+        title: "Cannot Remove Account Holder",
+        description: "Remove all associated wallets first.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setAccountHolders(prev => prev.filter(ah => ah.id !== id));
+    
+    if (accountHolder) {
+      toast({
+        title: "Account Holder Removed",
+        description: `${accountHolder.name} has been removed.`,
+      });
+    }
+  }, [accountHolders, wallets, toast]);
+
+  const addWallet = useCallback((address: string, label: string, accountHolderId: string) => {
     const newWallet: Wallet = {
       id: crypto.randomUUID(),
       address,
       label,
+      accountHolderId,
       addedAt: new Date(),
       lastSync: null,
       isActive: true,
@@ -113,8 +165,11 @@ export const WalletProvider = ({ children }: { children: React.ReactNode }) => {
     <WalletContext.Provider
       value={{
         wallets,
+        accountHolders,
+        addAccountHolder,
         addWallet,
         removeWallet,
+        removeAccountHolder,
         reimportWalletData,
         isImporting,
       }}
