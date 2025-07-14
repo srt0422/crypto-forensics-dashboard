@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { useAccountHolder } from '@/contexts/AccountHolderContext';
+import { useWallets } from '@/contexts/WalletContext';
 import { 
   generateTransactions, 
   generateAddresses, 
@@ -18,11 +19,36 @@ import {
 
 export const useFilteredData = () => {
   const { selectedAccountHolderId, getSelectedAccountHolderWallets } = useAccountHolder();
+  const { accountHolders } = useWallets();
 
   const walletAddresses = getSelectedAccountHolderWallets();
   const hasSelection = selectedAccountHolderId && walletAddresses.length > 0;
+  const hasAccountHolders = accountHolders.length > 0;
 
   const filteredData = useMemo(() => {
+    // If no account holders exist, return empty data
+    if (!hasAccountHolders) {
+      return {
+        inboundTransactions: [],
+        outboundTransactions: [],
+        possibleAddresses: [],
+        chainStatistics: [],
+        fundSourceTree: { id: 'root', address: 'No Data', value: 0, chain: '', depth: 0, children: [] },
+        timeSeriesData: [],
+        summaryData: {
+          totalIn: 0,
+          totalOut: 0,
+          netFlow: 0,
+          transactionCount: 0,
+          uniqueAddressCount: 0,
+          potentiallyOwnedAddresses: 0,
+          chainCounts: {},
+          layerCounts: { L1: 0, L2: 0 }
+        }
+      };
+    }
+
+    // If account holders exist but none selected, show aggregate data
     if (!hasSelection) {
       return {
         inboundTransactions: defaultInbound,
