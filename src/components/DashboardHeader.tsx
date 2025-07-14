@@ -34,12 +34,12 @@ const DashboardHeader = ({ title, subtitle }: DashboardHeaderProps) => {
           {subtitle && <p className="text-gray-500 mt-1">{subtitle}</p>}
         </div>
         <div className="flex items-center space-x-2">
-          <Select value={selectedAccountHolderId || ""} onValueChange={(value) => setSelectedAccountHolderId(value || null)}>
+          <Select value={selectedAccountHolderId || "all"} onValueChange={(value) => setSelectedAccountHolderId(value === "all" ? null : value)}>
             <SelectTrigger className="w-[200px]">
               <SelectValue placeholder="Select account holder" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Account Holders</SelectItem>
+              <SelectItem value="all">All Account Holders</SelectItem>
               {accountHolders.map((holder) => (
                 <SelectItem key={holder.id} value={holder.id}>
                   {holder.name}
