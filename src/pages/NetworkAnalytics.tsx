@@ -2,12 +2,13 @@
 import { useState } from 'react';
 import DashboardHeader from '@/components/DashboardHeader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { chainStatistics } from '@/data/mockData';
+import { useFilteredData } from '@/hooks/useFilteredData';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 
 const NetworkAnalytics = () => {
+  const { chainStatistics } = useFilteredData();
   const [filter, setFilter] = useState<string>('all');
 
   const filteredData = filter === 'all' 

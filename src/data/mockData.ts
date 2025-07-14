@@ -39,8 +39,8 @@ export interface FundSourceNode {
   children?: FundSourceNode[];
 }
 
-// Generate random transactions
-const generateTransactions = (count: number, direction: 'in' | 'out'): Transaction[] => {
+// Generate random transactions for specific wallets
+const generateTransactions = (count: number, direction: 'in' | 'out', walletAddresses: string[] = []): Transaction[] => {
   const chains = ['Ethereum', 'Bitcoin', 'Polygon', 'Arbitrum', 'Optimism', 'Solana', 'Avalanche'];
   const layers = {
     'Ethereum': 'L1',
@@ -57,6 +57,7 @@ const generateTransactions = (count: number, direction: 'in' | 'out'): Transacti
   const endDate = new Date();
   
   const randomAddressPrefix = direction === 'in' ? '0x9c' : '0x8a';
+  const defaultWallet = '0x8a7c0c23e98a2d7f8c5c83187bc7f22b8810aa17';
   
   for (let i = 0; i < count; i++) {
     const chain = chains[Math.floor(Math.random() * chains.length)];
@@ -64,15 +65,20 @@ const generateTransactions = (count: number, direction: 'in' | 'out'): Transacti
       startDate.getTime() + Math.random() * (endDate.getTime() - startDate.getTime())
     ).toISOString();
     
+    // Use specific wallet addresses if provided
+    const targetWallet = walletAddresses.length > 0 
+      ? walletAddresses[Math.floor(Math.random() * walletAddresses.length)]
+      : defaultWallet;
+    
     const transaction: Transaction = {
-      id: `tx-${i}`,
+      id: `tx-${Date.now()}-${i}`,
       timestamp,
       amount: Math.random() * 100 + 0.1,
       fromAddress: direction === 'in' 
         ? `${randomAddressPrefix}${Math.random().toString(16).slice(2, 12)}` 
-        : '0x8a7c0c23e98a2d7f8c5c83187bc7f22b8810aa17',
+        : targetWallet,
       toAddress: direction === 'in' 
-        ? '0x8a7c0c23e98a2d7f8c5c83187bc7f22b8810aa17' 
+        ? targetWallet 
         : `${randomAddressPrefix}${Math.random().toString(16).slice(2, 12)}`,
       chain,
       layer: layers[chain as keyof typeof layers],
@@ -84,8 +90,8 @@ const generateTransactions = (count: number, direction: 'in' | 'out'): Transacti
   return transactions.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 };
 
-// Generate mock addresses
-const generateAddresses = (count: number): Address[] => {
+// Generate mock addresses for specific wallets
+const generateAddresses = (count: number, walletAddresses: string[] = []): Address[] => {
   const chains = ['Ethereum', 'Bitcoin', 'Polygon', 'Arbitrum', 'Optimism', 'Solana', 'Avalanche'];
   const tokenTypes = ['Native', 'ERC20', 'ERC721', 'SPL'];
   const addresses: Address[] = [];
@@ -94,7 +100,9 @@ const generateAddresses = (count: number): Address[] => {
   
   for (let i = 0; i < count; i++) {
     const address: Address = {
-      address: `0x${Math.random().toString(16).slice(2, 42)}`,
+      address: walletAddresses.length > 0 && i < walletAddresses.length
+        ? walletAddresses[i]
+        : `0x${Math.random().toString(16).slice(2, 42)}`,
       confidence: Math.random() * 100,
       firstSeen: new Date(
         startDate.getTime() + Math.random() * (endDate.getTime() - startDate.getTime())
@@ -111,8 +119,8 @@ const generateAddresses = (count: number): Address[] => {
   return addresses.sort((a, b) => b.confidence - a.confidence);
 };
 
-// Generate chain statistics
-const generateChainStats = (): ChainStats[] => {
+// Generate chain statistics for specific transactions
+const generateChainStats = (transactions: Transaction[] = []): ChainStats[] => {
   const chains = [
     { name: 'Ethereum', layer: 'L1' },
     { name: 'Bitcoin', layer: 'L1' },
@@ -123,6 +131,32 @@ const generateChainStats = (): ChainStats[] => {
     { name: 'Optimism', layer: 'L2' }
   ];
   
+  // If we have transactions, calculate stats from them
+  if (transactions.length > 0) {
+    const chainCounts: Record<string, { count: number; volume: number; addresses: Set<string> }> = {};
+    
+    transactions.forEach(tx => {
+      if (!chainCounts[tx.chain]) {
+        chainCounts[tx.chain] = { count: 0, volume: 0, addresses: new Set() };
+      }
+      chainCounts[tx.chain].count++;
+      chainCounts[tx.chain].volume += tx.amount;
+      chainCounts[tx.chain].addresses.add(tx.fromAddress);
+      chainCounts[tx.chain].addresses.add(tx.toAddress);
+    });
+    
+    const totalTransactions = transactions.length;
+    return chains.map(c => ({
+      chain: c.name,
+      layer: c.layer,
+      transactionCount: chainCounts[c.name]?.count || 0,
+      totalVolume: chainCounts[c.name]?.volume || 0,
+      uniqueAddresses: chainCounts[c.name]?.addresses.size || 0,
+      percentageOfTotal: ((chainCounts[c.name]?.count || 0) / totalTransactions) * 100
+    }));
+  }
+  
+  // Fallback to random data
   let totalTransactions = 0;
   const stats: ChainStats[] = chains.map(c => {
     const txCount = Math.floor(Math.random() * 1000) + 100;
@@ -143,12 +177,14 @@ const generateChainStats = (): ChainStats[] => {
   }));
 };
 
-// Generate fund source tree
-const generateFundSourceTree = (depth: number = 1, maxDepth: number = 4): FundSourceNode => {
+// Generate fund source tree for specific wallets
+const generateFundSourceTree = (depth: number = 1, maxDepth: number = 4, walletAddresses: string[] = []): FundSourceNode => {
   if (depth > maxDepth) {
     return {
       id: `node-leaf-${Math.random().toString(16).slice(2, 10)}`,
-      address: `0x${Math.random().toString(16).slice(2, 42)}`,
+      address: walletAddresses.length > 0 && depth === 1
+        ? walletAddresses[Math.floor(Math.random() * walletAddresses.length)]
+        : `0x${Math.random().toString(16).slice(2, 42)}`,
       value: Math.random() * 50,
       chain: ['Ethereum', 'Bitcoin', 'Polygon', 'Arbitrum'][Math.floor(Math.random() * 4)],
       depth
@@ -159,12 +195,14 @@ const generateFundSourceTree = (depth: number = 1, maxDepth: number = 4): FundSo
   const children: FundSourceNode[] = [];
   
   for (let i = 0; i < childCount; i++) {
-    children.push(generateFundSourceTree(depth + 1, maxDepth));
+    children.push(generateFundSourceTree(depth + 1, maxDepth, walletAddresses));
   }
   
   return {
     id: `node-${depth}-${Math.random().toString(16).slice(2, 10)}`,
-    address: `0x${Math.random().toString(16).slice(2, 42)}`,
+    address: walletAddresses.length > 0 && depth === 1
+      ? walletAddresses[Math.floor(Math.random() * walletAddresses.length)]
+      : `0x${Math.random().toString(16).slice(2, 42)}`,
     value: children.reduce((sum, child) => sum + child.value, 0),
     chain: ['Ethereum', 'Bitcoin', 'Polygon', 'Arbitrum'][Math.floor(Math.random() * 4)],
     depth,
@@ -172,14 +210,41 @@ const generateFundSourceTree = (depth: number = 1, maxDepth: number = 4): FundSo
   };
 };
 
-// Generate time series data for chart
-export const generateTimeSeriesData = () => {
+// Generate time series data for chart from transactions
+const generateTimeSeriesData = (transactions: Transaction[] = []) => {
   const data = [];
   const startDate = new Date(2023, 0, 1);
   const endDate = new Date();
   const totalDays = Math.floor((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
   
-  // Generate data points (roughly weekly)
+  if (transactions.length > 0) {
+    // Group transactions by week
+    const weeklyData: Record<string, { inflow: number; outflow: number }> = {};
+    
+    transactions.forEach(tx => {
+      const txDate = new Date(tx.timestamp);
+      const weekStart = new Date(txDate);
+      weekStart.setDate(txDate.getDate() - txDate.getDay());
+      const weekKey = weekStart.toISOString().split('T')[0];
+      
+      if (!weeklyData[weekKey]) {
+        weeklyData[weekKey] = { inflow: 0, outflow: 0 };
+      }
+      
+      if (tx.fromAddress.startsWith('0x9c')) {
+        weeklyData[weekKey].inflow += tx.amount;
+      } else {
+        weeklyData[weekKey].outflow += tx.amount;
+      }
+    });
+    
+    // Convert to array and sort
+    return Object.entries(weeklyData)
+      .map(([date, values]) => ({ date, ...values }))
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  }
+  
+  // Fallback to random data
   for (let i = 0; i < totalDays; i += 7) {
     const date = new Date(startDate);
     date.setDate(date.getDate() + i);
@@ -230,7 +295,10 @@ export const calculateSummaryData = (
   };
 };
 
-// Create our mock data
+// Export data generation functions
+export { generateTransactions, generateAddresses, generateChainStats, generateFundSourceTree, generateTimeSeriesData };
+
+// Create default mock data (for backward compatibility)
 export const inboundTransactions = generateTransactions(150, 'in');
 export const outboundTransactions = generateTransactions(80, 'out');
 export const possibleAddresses = generateAddresses(35);

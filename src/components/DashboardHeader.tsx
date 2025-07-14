@@ -5,6 +5,9 @@ import { Calendar } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { format } from 'date-fns';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useWallets } from '@/contexts/WalletContext';
+import { useAccountHolder } from '@/contexts/AccountHolderContext';
 
 interface DashboardHeaderProps {
   title: string;
@@ -12,6 +15,9 @@ interface DashboardHeaderProps {
 }
 
 const DashboardHeader = ({ title, subtitle }: DashboardHeaderProps) => {
+  const { accountHolders } = useWallets();
+  const { selectedAccountHolderId, setSelectedAccountHolderId } = useAccountHolder();
+  
   const [dateRange, setDateRange] = useState<{
     from: Date;
     to: Date;
@@ -28,6 +34,19 @@ const DashboardHeader = ({ title, subtitle }: DashboardHeaderProps) => {
           {subtitle && <p className="text-gray-500 mt-1">{subtitle}</p>}
         </div>
         <div className="flex items-center space-x-2">
+          <Select value={selectedAccountHolderId || ""} onValueChange={(value) => setSelectedAccountHolderId(value || null)}>
+            <SelectTrigger className="w-[200px]">
+              <SelectValue placeholder="Select account holder" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">All Account Holders</SelectItem>
+              {accountHolders.map((holder) => (
+                <SelectItem key={holder.id} value={holder.id}>
+                  {holder.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Popover>
             <PopoverTrigger asChild>
               <Button variant="outline" className="flex items-center">

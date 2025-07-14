@@ -3,7 +3,7 @@ import DashboardHeader from '@/components/DashboardHeader';
 import SummaryCards from '@/components/SummaryCards';
 import TransactionChart from '@/components/TransactionChart';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { inboundTransactions, outboundTransactions, chainStatistics } from '@/data/mockData';
+import { useFilteredData } from '@/hooks/useFilteredData';
 import {
   PieChart,
   Pie,
@@ -14,6 +14,8 @@ import {
 } from 'recharts';
 
 const Dashboard = () => {
+  const { inboundTransactions, outboundTransactions, chainStatistics } = useFilteredData();
+  
   // Calculate data for the chain distribution pie chart
   const chainData = Object.entries(
     chainStatistics.reduce((acc: Record<string, number>, chain) => {

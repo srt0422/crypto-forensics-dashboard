@@ -8,6 +8,7 @@ import Layout from "@/components/Layout";
 import LoginPage from "@/components/LoginPage";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { WalletProvider } from "@/contexts/WalletContext";
+import { AccountHolderProvider } from "@/contexts/AccountHolderContext";
 import Index from "./pages/Index";
 import NetworkAnalytics from "./pages/NetworkAnalytics";
 import InboundTransactions from "./pages/InboundTransactions";
@@ -49,7 +50,9 @@ const App = () => (
       <Sonner />
       <AuthProvider>
         <WalletProvider>
-          <AppContent />
+          <AccountHolderProvider>
+            <AppContent />
+          </AccountHolderProvider>
         </WalletProvider>
       </AuthProvider>
     </TooltipProvider>

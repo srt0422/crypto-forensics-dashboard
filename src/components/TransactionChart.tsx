@@ -11,9 +11,11 @@ import {
   Legend,
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { timeSeriesData } from '@/data/mockData';
+import { useFilteredData } from '@/hooks/useFilteredData';
 
 const TransactionChart = () => {
+  const { timeSeriesData } = useFilteredData();
+  
   return (
     <Card className="shadow-sm mt-6">
       <CardHeader>

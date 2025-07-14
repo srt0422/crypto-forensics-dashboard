@@ -8,9 +8,10 @@ import {
   LinkIcon,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { summaryData } from '@/data/mockData';
+import { useFilteredData } from '@/hooks/useFilteredData';
 
 const SummaryCards = () => {
+  const { summaryData } = useFilteredData();
   const {
     totalIn,
     totalOut,

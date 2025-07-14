@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import DashboardHeader from '@/components/DashboardHeader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { fundSourceTree } from '@/data/mockData';
+import { useFilteredData } from '@/hooks/useFilteredData';
 import { Badge } from '@/components/ui/badge';
 
 // Utility to collect all node IDs in the tree
@@ -16,7 +16,7 @@ function collectAllNodeIds(node) {
 }
 
 interface FundSourceNodeProps {
-  node: typeof fundSourceTree;
+  node: any;
   expanded: Record<string, boolean>;
   toggleExpand: (id: string) => void;
   indent?: number;
@@ -83,6 +83,7 @@ interface FundSourceHierarchyProps {
 }
 
 const FundSourceHierarchy: React.FC<FundSourceHierarchyProps> = () => {
+  const { fundSourceTree } = useFilteredData();
   // Read global flag for PDF export mode
   const [pdfExportMode, setPdfExportMode] = useState(!!window.__pdfExportMode);
 

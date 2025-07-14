@@ -2,13 +2,14 @@
 import { useState, useMemo } from 'react';
 import DashboardHeader from '@/components/DashboardHeader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { possibleAddresses } from '@/data/mockData';
+import { useFilteredData } from '@/hooks/useFilteredData';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Search } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 
 const AddressAttribution = () => {
+  const { possibleAddresses } = useFilteredData();
   const [searchTerm, setSearchTerm] = useState('');
 
   // Apply search filter

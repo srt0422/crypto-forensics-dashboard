@@ -2,7 +2,7 @@
 import { useState, useMemo } from 'react';
 import DashboardHeader from '@/components/DashboardHeader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { outboundTransactions } from '@/data/mockData';
+import { useFilteredData } from '@/hooks/useFilteredData';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -15,6 +15,7 @@ import {
 import { Search } from 'lucide-react';
 
 const OutboundTransactions = () => {
+  const { outboundTransactions } = useFilteredData();
   const [searchTerm, setSearchTerm] = useState('');
   const [chainFilter, setChainFilter] = useState('all');
 
