@@ -48,16 +48,25 @@ export const useFilteredData = () => {
       };
     }
 
-    // If account holders exist but none selected, show aggregate data
+    // If account holders exist but none selected, show empty data
     if (!hasSelection) {
       return {
-        inboundTransactions: defaultInbound,
-        outboundTransactions: defaultOutbound,
-        possibleAddresses: defaultAddresses,
-        chainStatistics: defaultChainStats,
-        fundSourceTree: defaultFundTree,
-        timeSeriesData: defaultTimeData,
-        summaryData: defaultSummary
+        inboundTransactions: [],
+        outboundTransactions: [],
+        possibleAddresses: [],
+        chainStatistics: [],
+        fundSourceTree: { id: 'root', address: 'No Data', value: 0, chain: '', depth: 0, children: [] },
+        timeSeriesData: [],
+        summaryData: {
+          totalIn: 0,
+          totalOut: 0,
+          netFlow: 0,
+          transactionCount: 0,
+          uniqueAddressCount: 0,
+          potentiallyOwnedAddresses: 0,
+          chainCounts: {},
+          layerCounts: { L1: 0, L2: 0 }
+        }
       };
     }
 
