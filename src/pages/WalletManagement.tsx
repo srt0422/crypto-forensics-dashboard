@@ -27,19 +27,23 @@ const WalletManagement = () => {
   const [selectedAccountHolder, setSelectedAccountHolder] = useState('');
   const [newAccountHolderName, setNewAccountHolderName] = useState('');
 
-  const handleAddAccountHolder = (e: React.FormEvent) => {
+  const handleAddAccountHolder = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!newAccountHolderName.trim()) {
       return;
     }
 
-    const newId = addAccountHolder(newAccountHolderName.trim());
-    setSelectedAccountHolder(newId);
-    setNewAccountHolderName('');
+    try {
+      const newId = await addAccountHolder(newAccountHolderName.trim());
+      setSelectedAccountHolder(newId);
+      setNewAccountHolderName('');
+    } catch (error) {
+      // Error handling is done in the context
+    }
   };
 
-  const handleAddWallet = (e: React.FormEvent) => {
+  const handleAddWallet = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!newAddress.trim() || !newLabel.trim() || !selectedAccountHolder) {
@@ -52,9 +56,13 @@ const WalletManagement = () => {
       return;
     }
 
-    addWallet(newAddress.trim(), newLabel.trim(), selectedAccountHolder);
-    setNewAddress('');
-    setNewLabel('');
+    try {
+      await addWallet(newAddress.trim(), newLabel.trim(), selectedAccountHolder);
+      setNewAddress('');
+      setNewLabel('');
+    } catch (error) {
+      // Error handling is done in the context
+    }
   };
 
   const formatDate = (date: Date | null) => {

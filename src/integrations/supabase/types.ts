@@ -14,7 +14,113 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      account_holders: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      transactions: {
+        Row: {
+          amount: number
+          block_number: number | null
+          chain: string
+          created_at: string
+          from_address: string
+          id: string
+          timestamp: string
+          to_address: string
+          transaction_hash: string
+          transaction_type: string
+          user_id: string | null
+          wallet_address: string
+        }
+        Insert: {
+          amount: number
+          block_number?: number | null
+          chain: string
+          created_at?: string
+          from_address: string
+          id?: string
+          timestamp: string
+          to_address: string
+          transaction_hash: string
+          transaction_type: string
+          user_id?: string | null
+          wallet_address: string
+        }
+        Update: {
+          amount?: number
+          block_number?: number | null
+          chain?: string
+          created_at?: string
+          from_address?: string
+          id?: string
+          timestamp?: string
+          to_address?: string
+          transaction_hash?: string
+          transaction_type?: string
+          user_id?: string | null
+          wallet_address?: string
+        }
+        Relationships: []
+      }
+      wallets: {
+        Row: {
+          account_holder_id: string
+          added_at: string
+          address: string
+          id: string
+          is_active: boolean
+          label: string
+          last_sync: string | null
+          user_id: string | null
+        }
+        Insert: {
+          account_holder_id: string
+          added_at?: string
+          address: string
+          id?: string
+          is_active?: boolean
+          label: string
+          last_sync?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          account_holder_id?: string
+          added_at?: string
+          address?: string
+          id?: string
+          is_active?: boolean
+          label?: string
+          last_sync?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wallets_account_holder_id_fkey"
+            columns: ["account_holder_id"]
+            isOneToOne: false
+            referencedRelation: "account_holders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
